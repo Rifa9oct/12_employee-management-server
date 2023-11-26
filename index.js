@@ -35,30 +35,56 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     //await client.connect();
 
-   
+    const userCollection = client.db('manageDB').collection('users');
 
-   //auth related api (generate token)
-   app.post('/jwt', async (req, res) => {
-    const user = req.body;
-    console.log("user for token", user);
-    const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'none'
+
+
+    //verify token token
+    const verifyToken = (req, res, next) => {
+      const token = req?.cookies?.token;
+      console.log("token in the middleware: ", token);
+      if (!token) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "unauthorized access" });
+        }
+        req.user = decoded;
+        next();
+      })
+    }
+
+
+
+    // users related api 
+    app.post("/users", async (req, res) => {
+      const userItem = req.body;
+      const result = await userCollection.insertOne(userItem);
+      res.send(result);
     })
-    res.send({ success: true });
-  })
-
-  //clear token from cookie
-  app.post('/logout', async (req, res) => {
-    const user = req.body;
-    res.clearCookie('token', { maxAge: 0 }).send({ success: true })
-  })
 
 
+    
 
+    //auth related api (generate token)
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      console.log("user for token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      })
+      res.send({ success: true });
+    })
 
+    //clear token from cookie
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+    })
 
 
     // Send a ping to confirm a successful connection
@@ -73,10 +99,10 @@ run().catch(console.dir);
 
 
 
-app.get('/',(req, res)=>{
-    res.send("EMPLOYEE MANAGEMENT SERVER IS RUNNING....")
+app.get('/', (req, res) => {
+  res.send("EMPLOYEE MANAGEMENT SERVER IS RUNNING....")
 })
 
-app.listen(port, ()=>{
-    console.log(`Employee Management server is running, ${port}`)
+app.listen(port, () => {
+  console.log(`Employee Management server is running, ${port}`)
 })
