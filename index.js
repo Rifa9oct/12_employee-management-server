@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -58,14 +58,31 @@ async function run() {
 
 
     // users related api 
+    app.get('/users', async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    })
+
     app.post("/users", async (req, res) => {
       const userItem = req.body;
       const result = await userCollection.insertOne(userItem);
       res.send(result);
     })
 
+    app.patch('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set:{
+          verified: true
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
 
-    
+
+
 
     //auth related api (generate token)
     app.post('/jwt', async (req, res) => {
