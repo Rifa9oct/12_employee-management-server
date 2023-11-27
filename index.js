@@ -62,6 +62,12 @@ async function run() {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
+    app.get('/users/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await userCollection.findOne(query);
+      res.send(result);
+    })
 
     app.post("/users", async (req, res) => {
       const userItem = req.body;
@@ -69,12 +75,27 @@ async function run() {
       res.send(result);
     })
 
+    //update user verified or not
     app.patch('/users/:id', async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
         $set:{
           verified: true
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
+    //update user role
+    app.patch('/users/hr/:id', async (req, res) => {
+      const id = req.params.id;
+      const changeRole = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set:{
+          role: changeRole.role
         }
       }
       const result = await userCollection.updateOne(filter, updatedDoc);
