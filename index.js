@@ -37,12 +37,24 @@ async function run() {
 
     const userCollection = client.db('manageDB').collection('users');
 
+    //auth related api (generate token)
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      console.log("user for token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      })
+      res.send({ success: true });
+    })
 
 
     //verify token token
     const verifyToken = (req, res, next) => {
       const token = req?.cookies?.token;
-      console.log("token in the middleware: ", token);
+      // console.log("token in the middleware: ", token);
       if (!token) {
         return res.status(401).send({ message: "unauthorized access" });
       }
@@ -57,14 +69,62 @@ async function run() {
 
 
 
-    // users related api 
-    app.get('/users', async (req, res) => {
+    // check admin or not 
+    app.get("/users/admin/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let admin = false;
+      if (user) {
+        admin = user?.role === "admin";
+      }
+      res.send({ admin });
+    })
+
+    //check HR or not
+    app.get("/users/hr/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let hr = false;
+      if (user) {
+        hr = user?.role === "hr";
+      }
+      res.send({ hr });
+    })
+
+    //check Employee or not
+    app.get("/users/employee/:email", verifyToken, async (req, res) => {
+      const email = req.params.email;
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      let employee = false;
+      if (user) {
+       employee = user?.role === "employee";
+      }
+      res.send({employee});
+    })
+
+
+
+    app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
+
+
     app.get('/users/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await userCollection.findOne(query);
       res.send(result);
     })
@@ -80,7 +140,7 @@ async function run() {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
-        $set:{
+        $set: {
           verified: true
         }
       }
@@ -94,7 +154,7 @@ async function run() {
       const changeRole = req.body;
       const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
-        $set:{
+        $set: {
           role: changeRole.role
         }
       }
@@ -105,18 +165,6 @@ async function run() {
 
 
 
-    //auth related api (generate token)
-    app.post('/jwt', async (req, res) => {
-      const user = req.body;
-      console.log("user for token", user);
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'none'
-      })
-      res.send({ success: true });
-    })
 
     //clear token from cookie
     app.post('/logout', async (req, res) => {
