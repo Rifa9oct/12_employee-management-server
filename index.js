@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin: [
-    "http://localhost:5173",
+    "http://localhost:5174",
   ],
   credentials: true
 }));
@@ -70,7 +70,6 @@ async function run() {
     }
 
 
-
     // check admin or not 
     app.get("/users/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -111,14 +110,10 @@ async function run() {
       const user = await userCollection.findOne(query);
       let employee = false;
       if (user) {
-       employee = user?.role === "employee";
+        employee = user?.role === "employee";
       }
-      res.send({employee});
+      res.send({ employee });
     })
-
-
-
-
 
     app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
@@ -128,8 +123,6 @@ async function run() {
       const result = await reviewCollection.find().toArray();
       res.send(result);
     })
-
-
 
     app.get('/users/:id', async (req, res) => {
       const id = req.params.id;
@@ -157,6 +150,20 @@ async function run() {
       res.send(result);
     })
 
+
+    //user is fired
+    app.patch('/users/fired/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          fired: true
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    })
+
     //update user role
     app.patch('/users/hr/:id', async (req, res) => {
       const id = req.params.id;
@@ -172,7 +179,6 @@ async function run() {
     })
 
 
-
     //clear token from cookie
     app.post('/logout', async (req, res) => {
       const user = req.body;
@@ -181,13 +187,13 @@ async function run() {
 
 
     //payment intent
-    app.post("/create-payment-intent", async(req,res)=>{
-      const {salary} = req.body;
+    app.post("/create-payment-intent", async (req, res) => {
+      const { salary } = req.body;
       const amount = parseInt(salary * 100);
       const paymentIntent = await stripe.paymentIntents.create({
         amount: amount,
         currency: "usd",
-        payment_method_types:['card']
+        payment_method_types: ['card']
       });
 
       res.send({
