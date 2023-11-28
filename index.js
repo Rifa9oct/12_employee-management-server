@@ -36,11 +36,12 @@ async function run() {
     //await client.connect();
 
     const userCollection = client.db('manageDB').collection('users');
+    const reviewCollection = client.db('manageDB').collection('reviews');
 
     //auth related api (generate token)
     app.post('/jwt', async (req, res) => {
       const user = req.body;
-      console.log("user for token", user);
+      // console.log("user for token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
       res.cookie('token', token, {
         httpOnly: true,
@@ -116,10 +117,17 @@ async function run() {
 
 
 
+
+
     app.get('/users', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     })
+    app.get('/reviews', async (req, res) => {
+      const result = await reviewCollection.find().toArray();
+      res.send(result);
+    })
+
 
 
     app.get('/users/:id', async (req, res) => {
