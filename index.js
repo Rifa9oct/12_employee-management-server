@@ -39,6 +39,7 @@ async function run() {
     const userCollection = client.db('manageDB').collection('users');
     const reviewCollection = client.db('manageDB').collection('reviews');
     const paymentCollection = client.db('manageDB').collection('payments');
+    const worksheetCollection = client.db('manageDB').collection('worksheets');
 
     //auth related api (generate token)
     app.post('/jwt', async (req, res) => {
@@ -187,6 +188,20 @@ async function run() {
     })
 
 
+    //worksheet
+    app.post("/worksheet", async(req, res)=>{
+      const workSheet = req.body;
+      const result = await worksheetCollection.insertOne(workSheet);
+      res.send(result);
+    })
+    //worksheet
+    app.get("/worksheet/:email",verifyToken, async(req, res)=>{
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await worksheetCollection.find(query).toArray();
+      res.send(result);
+    })
+
     //payment intent
     app.post("/create-payment-intent", async (req, res) => {
       const { salary } = req.body;
@@ -219,7 +234,7 @@ async function run() {
       res.send(paymentResult);
     })
 
-    
+
     //payments
     app.get('/payments/:email', async (req, res) => {
       const email = req.params.email;
