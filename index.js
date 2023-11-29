@@ -209,7 +209,16 @@ async function run() {
       const paymentResult = await paymentCollection.insertOne(payment);
       res.send(paymentResult);
     })
-
+    //payments
+    app.get('/payments/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email: email};
+      // if(req.params.email !== req.user.email){
+      //   return res.status(403).send({message: "forbidden access"})
+      // }
+      const result = await paymentCollection.find(query).toArray();
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
