@@ -206,13 +206,24 @@ async function run() {
     //payments
     app.post("/payments", async (req, res) => {
       const payment = req.body;
+
+      const existingPayment = await paymentCollection.findOne({
+        email: payment.email,
+        monthYear: payment.monthYear,
+      });
+
+      if (existingPayment) {
+        return res.status(400).send({ message: 'Payment already processed for this month and year.'});
+      }
       const paymentResult = await paymentCollection.insertOne(payment);
       res.send(paymentResult);
     })
+
+    
     //payments
     app.get('/payments/:email', async (req, res) => {
       const email = req.params.email;
-      const query = {email: email};
+      const query = { email: email };
       // if(req.params.email !== req.user.email){
       //   return res.status(403).send({message: "forbidden access"})
       // }
