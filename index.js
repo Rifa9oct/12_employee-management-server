@@ -11,7 +11,7 @@ const port = process.env.PORT || 5000;
 // middleware
 app.use(cors({
   origin: [
-    "http://localhost:5174",
+    "http://localhost:5173",
   ],
   credentials: true
 }));
@@ -38,6 +38,7 @@ async function run() {
 
     const userCollection = client.db('manageDB').collection('users');
     const reviewCollection = client.db('manageDB').collection('reviews');
+    const paymentCollection = client.db('manageDB').collection('payments');
 
     //auth related api (generate token)
     app.post('/jwt', async (req, res) => {
@@ -201,6 +202,13 @@ async function run() {
       })
     })
 
+
+    //payments
+    app.post("/payments", async (req, res) => {
+      const payment = req.body;
+      const paymentResult = await paymentCollection.insertOne(payment);
+      res.send(paymentResult);
+    })
 
 
 
