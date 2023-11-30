@@ -22,29 +22,6 @@ app.use(payments);
 app.use(worksheets);
 
 
-// check admin or not 
-app.get("/users/admin/:email", async (req, res) => {
-    const email = req.params.email;
-    if (email !== req.user.email) {
-        return res.status(403).send({ message: "forbidden access" });
-    }
-    const query = { email: email };
-    const user = await userCollection.findOne(query);
-    let admin = false;
-    if (user) {
-        admin = user?.role === "admin";
-    }
-    res.send({ admin });
-})
-
-
-
-
-
-
-
-
-
 
 app.get("/", (req, res) => {
     res.send("EMPLOYEE MANAGEMENT SERVER IS RUNNING....");
@@ -63,11 +40,13 @@ app.use((err, req, res, next) => {
 })
 
 // error handling middleware (call connectDB)
-// app.use(globalErrorHandler);
-const main = async () => {
-    await connectDB()
-    app.listen(port, () => {
-        console.log(`Employee Management server is running, ${port}`);
-    });
-}
-main();
+
+// const main = async () => {
+//     await connectDB()
+//     app.listen(port, () => {
+//         console.log(`Employee Management server is running, ${port}`);
+//     });
+// }
+// main();
+
+module.exports = app;

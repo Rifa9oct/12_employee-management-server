@@ -4,7 +4,7 @@ const User = require("../../modals/User");
 const verifyToken = require("../../middlewares/verifyToken");
 var router = express.Router();
 
-//verify admin or not (done)
+//check admin or not (done)
 router.get("/users/admin/:email", verifyToken, async (req, res) => {
     const email = req.params.email;
     console.log(req.user.email)
