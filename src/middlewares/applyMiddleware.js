@@ -8,7 +8,7 @@ const applyMiddleware = (app) => {
     app.use(cors({
         origin: [
             LOCAL_CLIENT,
-            CLIENT
+           "https://tricky-earthquake.surge.sh"
         ],
         credentials: true
     }));
