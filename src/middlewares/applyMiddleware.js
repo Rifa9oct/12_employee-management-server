@@ -8,7 +8,7 @@ const applyMiddleware = (app) => {
     app.use(cors({
         origin: [
             LOCAL_CLIENT,
-           "https://tricky-earthquake.surge.sh"
+           "https://employee-management-client.vercel.app"
         ],
         credentials: true
     }));
